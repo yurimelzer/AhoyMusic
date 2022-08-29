@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:xct="http://xamarin.com/schemas/2020/toolkit"
+             xmlns:vm="clr-namespace:AhoyMusic.ViewModel"
+             xmlns:converter="clr-namespace:AhoyMusic.Converters"
+             x:Class="AhoyMusic.View.PlayerPage"
+             NavigationPage.HasNavigationBar="false">
+
+    <ContentPage.Resources>
+
+        <ResourceDictionary>
+
+            <converter:ByteArrayToImageSourceConverter             
+                x:Key="converterImage"/>
+            <converter:FormatarDuracaoConverter 
+                x:Key="converterDuracaoFormato"/>
+
+        </ResourceDictionary>
+
+    </ContentPage.Resources>
+    
+    <ContentPage.Content>
+
+        <StackLayout x:DataType="vm:PlayerViewModel">
+            
+            <StackLayout 
+                VerticalOptions="Start" HorizontalOptions="StartAndExpand">
+                
+                <ImageButton
+                    BackgroundColor="Transparent" Padding="15,20,10,10"
+                    Source="icone_downAccent.png" 
+                    Command="{Binding fecharPlayer}"/>
+                
+            </StackLayout>
+            
+            <StackLayout 
+                VerticalOptions="StartAndExpand" HorizontalOptions="CenterAndExpand" Padding="10,130,10,20">
+                
+                <Image 
+                    Source="{Binding thumbnail, Converter={StaticResource converterImage}}"></Image>
+                
+                <Label 
+                    LineBreakMode="NoWrap" Padding="20"
+                    Text="{Binding nome}"/>
+
+                <Slider 
+                    Maximum="{Binding duracao}" 
+                    Value="{Binding posicaoAtual, Mode=TwoWay}" >
+                    
+                    <Slider.Behaviors>
+                        
+                        <xct:EventToCommandBehavior 
+                            EventName="ValueChanged"
+                            Command="{Binding seekPlayer}"/>
+                        
+                    </Slider.Behaviors>
+                    
+                </Slider>
+
+                <StackLayout 
+                    Orientation="Horizontal" Padding="20,0,14,0">
+
+                    <Label 
+                        HorizontalOptions="Start"
+                        FontSize="Micro"
+                        Text="{Binding posicaoAtual, Converter={StaticResource converterDuracaoFormato}}"/>
+
+                    <Label 
+                        HorizontalOptions="EndAndExpand" 
+                        FontSize="Micro"
+                        Text="{Binding duracao, Converter={StaticResource converterDuracaoFormato}}"/>
+                    
+                </StackLayout>
+
+                <StackLayout 
+                    Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
+
+                    <Button 
+                        BackgroundColor="Transparent" 
+                        ImageSource="icone_backAccent.png" 
+                        Command="{Binding previousSong}"/>
+
+                    <Button 
+                        HeightRequest="60" WidthRequest="60" CornerRadius="50" BackgroundColor="#00ffc3"
+                        Style="{Binding btnPlayPauseStyle}"
+                        Command="{Binding playPause}"/>
+
+                    <Button 
+                        BackgroundColor="Transparent" 
+                        ImageSource="icone_nextAccent.png" 
+                        Command="{Binding nextSong}"/>
+
+                </StackLayout>
+            </StackLayout>
+            
+        </StackLayout>
+        
+    </ContentPage.Content>
+    
+</ContentPage>

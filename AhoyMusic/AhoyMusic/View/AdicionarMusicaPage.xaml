@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AhoyMusic.ViewModel"
+             x:Class="AhoyMusic.View.AdicionarMusicaPage"
+             NavigationPage.HasNavigationBar="false">
+    <ContentPage.BindingContext>
+        <vm:AdicionarMusicaViewModel></vm:AdicionarMusicaViewModel>
+    </ContentPage.BindingContext>
+    
+    <ContentPage.Content>
+        
+        <StackLayout 
+            Padding="0,200,0,0">
+            
+            <StackLayout 
+                VerticalOptions="Start" Padding="15" Orientation="Horizontal">
+                
+                <Entry 
+                    HorizontalOptions="FillAndExpand"
+                    Placeholder="Link do youtube" PlaceholderColor="#607D8B"
+                    Text="{Binding entryText}"/>
+                
+                <Button 
+                    HorizontalOptions="End"
+                    Style="{StaticResource roundTrasparentButton}" ImageSource="icone_lupaAccent"
+                    Command="{Binding buscarVideo}"/>
+                
+            </StackLayout>
+            
+            <Frame
+                VerticalOptions="StartAndExpand" 
+                Style="{StaticResource darkFrame}"
+                IsVisible="{Binding isFrameVisible}">
+                <AbsoluteLayout>
+                    <StackLayout>
+
+                        <Label 
+                            Text="{Binding objVideo.Title}"/>
+
+                        <Label 
+                            Text="{Binding objVideo.Author}"/>
+
+                        <Frame
+                            WidthRequest="330" HeightRequest="180"
+                            Padding="4,4,0,0" CornerRadius="10" BackgroundColor="#37474f">
+
+                            <Image
+                                Aspect="AspectFill"
+                                Source="{Binding thumbSource}"/>
+
+                        </Frame>
+                        
+                    </StackLayout>
+                    
+                        <Button 
+                            AbsoluteLayout.LayoutBounds="280,210"
+                            Style="{StaticResource roundAccentButton}" ImageSource="icone_downloadDark"
+                            Command="{Binding baixarMusica}"/>
+                    
+                </AbsoluteLayout>
+                
+            </Frame>
+
+            <ActivityIndicator IsRunning="{Binding isRunning}"/>
+        </StackLayout>
+        
+    </ContentPage.Content>
+    
+</ContentPage>

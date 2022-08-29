@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Application xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AhoyMusic.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            
+            <!-- Frame Style -->
+            
+            <Style x:Key="frameBase" TargetType="Frame">
+                <Setter Property="Margin" Value="10"/>
+                <Setter Property="CornerRadius" Value="20"/>
+            </Style>
+            
+            <Style x:Key="lightFrame" TargetType="Frame" BasedOn="{StaticResource frameBase}">
+                <Setter Property="BackgroundColor" Value="#F5F5F5"/>
+            </Style>
+            <Style x:Key="darkFrame" TargetType="Frame" BasedOn="{StaticResource frameBase}">
+                <Setter Property="BackgroundColor" Value="#455a64"/>
+            </Style>
+
+            <!-- Button Style-->
+            <Style x:Key="roundButton" TargetType="Button">
+                <Setter Property="WidthRequest" Value="50"/>
+                <Setter Property="HeightRequest" Value="50"/>
+                <Setter Property="CornerRadius" Value="50"/>
+            </Style>
+
+            <Style x:Key="roundTrasparentButton" TargetType="Button" BasedOn="{StaticResource roundButton}">
+                <Setter Property="BackgroundColor" Value="Transparent"/>
+            </Style>
+            
+            <Style x:Key="roundAccentButton" TargetType="Button" BasedOn="{StaticResource roundButton}">
+                <Setter Property="BackgroundColor" Value="#00ffc3"/>
+            </Style>
+
+            <Style x:Key="playButton" TargetType="Button">
+                <Setter Property="ImageSource" Value="icone_playDark"/>
+            </Style>
+            
+            <Style x:Key="pauseButton" TargetType="Button">
+                <Setter Property="ImageSource" Value="icone_pauseDark"/>
+            </Style>
+            
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
