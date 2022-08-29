@@ -220,6 +220,7 @@ namespace AhoyMusic.ViewModel
         private void Player_PlaybackEnded(object sender, EventArgs e)
         {
             //NextSong();
+
         }
 
         #endregion
