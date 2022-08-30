@@ -1,4 +1,5 @@
-﻿using AhoyMusic.Models;
+﻿using AhoyMusic.DependecyServices;
+using AhoyMusic.Models;
 using AhoyMusic.Repositorios;
 using Plugin.SimpleAudioPlayer;
 using System;
@@ -19,7 +20,6 @@ namespace AhoyMusic.ViewModel
 
         private ISimpleAudioPlayer player;
 
-        private ISimpleAudioPlayer nextPlayer;
 
 
         private byte[] _audio;
@@ -196,7 +196,8 @@ namespace AhoyMusic.ViewModel
         {
             ISimpleAudioPlayer player;
             var stream = new MemoryStream(audio);
-            player = CrossSimpleAudioPlayer.CreateSimpleAudioPlayer();
+            DependencyService.Get<IPlayerService>().InitPlayer();
+            player = CrossSimpleAudioPlayer.Current;
             player.PlaybackEnded += Player_PlaybackEnded;
             player.Load(stream);
             player.Play();
