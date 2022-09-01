@@ -196,7 +196,7 @@ namespace AhoyMusic.ViewModel
         {
             ISimpleAudioPlayer player;
             var stream = new MemoryStream(audio);
-            DependencyService.Get<IPlayerService>().InitPlayer();
+            DependencyService.Resolve<IPlayerService>().InitPlayer();
             player = CrossSimpleAudioPlayer.Current;
             player.PlaybackEnded += Player_PlaybackEnded;
             player.Load(stream);

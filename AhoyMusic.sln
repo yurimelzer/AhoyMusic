@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AhoyMusic.Android", "AhoyMu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AhoyMusic.iOS", "AhoyMusic\AhoyMusic.iOS\AhoyMusic.iOS.csproj", "{10278FAA-5ABC-4C4C-B769-707F40200E61}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AhoyMusic", "AhoyMusic\AhoyMusic\AhoyMusic.csproj", "{A040DAA4-CD71-4B9F-BF66-EACD9A0CAACC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AhoyMusic", "AhoyMusic\AhoyMusic\AhoyMusic.csproj", "{A040DAA4-CD71-4B9F-BF66-EACD9A0CAACC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

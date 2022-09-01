@@ -11,7 +11,6 @@ using System.Linq;
 using System.Text;
 using Xamarin.Forms;
 
-[assembly: Dependency(typeof(AhoyMusic.Droid.DroidPlayerService))]
 namespace AhoyMusic.Droid
 {
     [Activity]
