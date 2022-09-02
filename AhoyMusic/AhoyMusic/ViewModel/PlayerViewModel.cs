@@ -19,7 +19,6 @@ namespace AhoyMusic.ViewModel
 
         private ISimpleAudioPlayer player;
 
-        private ISimpleAudioPlayer nextPlayer;
 
 
         private byte[] _audio;
@@ -109,11 +108,16 @@ namespace AhoyMusic.ViewModel
         public PlayerViewModel(Musica musica)
         {
             objMusica = musica;
+            Configuration.musicaAtual = musica;
             repMusicas = new RepositorioDeMusicas();
+            DependencyService.Resolve<IPlayerService>().InitPlayer();
+
+            player = CrossSimpleAudioPlayer.Current;
+
+            Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
 
             SetProperties(musica);
 
-            player = BuildPlayer();
 
             fecharPlayer = new Command(FecharPlayer);
             playPause = new Command(PlayAndPause);
@@ -134,7 +138,6 @@ namespace AhoyMusic.ViewModel
 
         private void FecharPlayer()
         {
-            player.PlaybackEnded -= Player_PlaybackEnded;
             player.Dispose();
             App.Current.MainPage.Navigation.PopAsync(true);
         }
@@ -165,44 +168,42 @@ namespace AhoyMusic.ViewModel
         private void NextSong()
         {         
             objMusica = repMusicas.GetNext(objMusica);
-
+            Configuration.musicaAtual = objMusica;
             SetProperties(objMusica);
+            CrossSimpleAudioPlayer.Current.Dispose();
+            DependencyService.Resolve<IPlayerService>().InitPlayer();
 
-            if(player.Duration != 0)
-            {
-                player.PlaybackEnded -= Player_PlaybackEnded;
-                player.Dispose();
-                player = BuildPlayer();
-            }
+            //if (player.Duration != 0)
+            //{
+            //    player = CrossSimpleAudioPlayer.Current;
+            //}
         }
 
         private void PreviousSong()
         {
             objMusica = repMusicas.GetPrevious(objMusica);
+            Configuration.musicaAtual = objMusica;
+            SetProperties(objMusica);
+            CrossSimpleAudioPlayer.Current.Dispose();
+            DependencyService.Resolve<IPlayerService>().InitPlayer();
 
             SetProperties(objMusica);
 
-            if (player.Duration != 0)
-            {
-                player.PlaybackEnded -= Player_PlaybackEnded;
-                player.Dispose();
-                player = BuildPlayer();
-            }
-        }
-
         #region PLAYER METHODS
 
-        private ISimpleAudioPlayer BuildPlayer()
-        {
-            ISimpleAudioPlayer player;
-            var stream = new MemoryStream(audio);
-            player = CrossSimpleAudioPlayer.CreateSimpleAudioPlayer();
-            player.PlaybackEnded += Player_PlaybackEnded;
-            player.Load(stream);
-            player.Play();
-            Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
-            return player;
-        }
+        //private ISimpleAudioPlayer BuildPlayer()
+        //{
+        //    ISimpleAudioPlayer player;
+        //    var stream = new MemoryStream(audio);
+        //    DependencyService.Resolve<IPlayerService>().InitPlayer();
+        //    player = CrossSimpleAudioPlayer.Current;
+        //    player.PlaybackEnded += Player_PlaybackEnded;
+        //    player.Load(stream);
+
+        //    player.Play();
+        //    Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
+        //    return player;
+        //}
 
         private bool AtualizarPlayer()
         {
@@ -212,6 +213,7 @@ namespace AhoyMusic.ViewModel
                 return true;
             else
             {
+                NextSong();
                 return false;
             } 
         }
@@ -220,6 +222,12 @@ namespace AhoyMusic.ViewModel
         {
             //NextSong();
         }
+
+        //private void Player_PlaybackEnded(object sender, EventArgs e)
+        //{
+        //    //NextSong();
+
+        //}
 
         #endregion
     }
