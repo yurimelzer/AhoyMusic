@@ -17,17 +17,23 @@ namespace AhoyMusic.Droid
 
     public class DroidPlayerService : IPlayerService
     {
+
         public void InitPlayer()
         {
             var intent = new Intent(Android.App.Application.Context, typeof(StreamingBackgroundService));
             intent.SetAction(StreamingBackgroundService.ActionInitPlayer);
             Android.App.Application.Context.StopService(intent);
-            var serviceIsRunning = Android.App.Application.Context.StartService(intent);
+            Android.App.Application.Context.StartService(intent);
         }
-
-        public void Load()
+        public void ChangeSong()
         {
-            throw new NotImplementedException();
+            //var intent = new Intent(Android.App.Application.Context, typeof(ChangeSongBackgroundService));
+            //intent.SetAction(ChangeSongBackgroundService.ActionChangeSong);
+            //Android.App.Application.Context.StopService(intent);
+            var intent = new Intent(Android.App.Application.Context, typeof(StreamingBackgroundService));
+            intent.SetAction(StreamingBackgroundService.ActionInitPlayer);
+            Android.App.Application.Context.StopService(intent);
+            Android.App.Application.Context.StartForegroundService(intent);
         }
 
         public void Pause()
