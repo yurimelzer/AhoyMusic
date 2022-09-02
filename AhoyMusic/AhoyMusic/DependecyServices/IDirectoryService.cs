@@ -4,10 +4,8 @@ using System.Text;
 
 namespace AhoyMusic.DependecyServices
 {
-    public interface IPlayerService
+    public interface IDirectoryService
     {
-        void BuildPlayer();
-
-        void StopPlayer();
+        string GetFolderPath();
     }
 }

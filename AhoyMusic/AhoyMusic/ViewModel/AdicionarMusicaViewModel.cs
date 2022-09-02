@@ -1,4 +1,5 @@
-﻿using AhoyMusic.Models;
+﻿using AhoyMusic.DependecyServices;
+using AhoyMusic.Models;
 using AhoyMusic.Repositorios;
 using System;
 using System.Collections.Generic;
@@ -146,6 +147,11 @@ namespace AhoyMusic.ViewModel
 
             var streamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(objVideo.Id);
             var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+            var folder = DependencyService.Get<IDirectoryService>().GetFolderPath();
+            var filePath = Path.Combine(folder, $"video.{streamInfo.Container}");
+
+            await youtubeClient.Videos.Streams.DownloadAsync(streamInfo, folder);
 
             var stream = await youtubeClient.Videos.Streams.GetAsync(streamInfo);
             var memoryStream = new MemoryStream();

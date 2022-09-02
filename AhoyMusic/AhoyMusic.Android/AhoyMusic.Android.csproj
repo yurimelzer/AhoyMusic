@@ -63,9 +63,11 @@
     <PackageReference Include="Xamarin.Essentials" Version="1.7.3" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChangeSongBackgroundService.cs" />
+    <Compile Include="DirectoryService.cs" />
+    <Compile Include="PlayerBackgroundService.cs" />
     <Compile Include="DatabaseConnection.cs" />
     <Compile Include="MainActivity.cs" />
+    <Compile Include="PlayerService.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -140,6 +142,9 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\icone_downloadDark.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\xml\file_paths.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ProjectExtensions>
