@@ -109,11 +109,16 @@ namespace AhoyMusic.ViewModel
         public PlayerViewModel(Musica musica)
         {
             objMusica = musica;
+            Configuration.musicaAtual = musica;
             repMusicas = new RepositorioDeMusicas();
+            DependencyService.Resolve<IPlayerService>().InitPlayer();
+
+            player = CrossSimpleAudioPlayer.Current;
+
+            Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
 
             SetProperties(musica);
 
-            player = BuildPlayer();
 
             fecharPlayer = new Command(FecharPlayer);
             playPause = new Command(PlayAndPause);
@@ -134,21 +139,20 @@ namespace AhoyMusic.ViewModel
 
         private void FecharPlayer()
         {
-            player.PlaybackEnded -= Player_PlaybackEnded;
             player.Dispose();
             App.Current.MainPage.Navigation.PopAsync(true);
         }
 
         private void PlayAndPause()
         {
-            if (player.IsPlaying)
+            if (CrossSimpleAudioPlayer.Current.IsPlaying)
             {
-                player.Pause();
+                CrossSimpleAudioPlayer.Current.Pause();
                 btnPlayPauseStyle = App.Current.Resources["playButton"] as Style;
             }
             else
             {
-                player.Play();
+                CrossSimpleAudioPlayer.Current.Play();
                 btnPlayPauseStyle = App.Current.Resources["pauseButton"] as Style;
             }
         }
@@ -156,73 +160,75 @@ namespace AhoyMusic.ViewModel
         private void SeekPlayer(object args)
         {
             var e = args as ValueChangedEventArgs;
-            if (posicaoAtual != player.Duration && (e.NewValue - e.OldValue > 1.0 || e.OldValue - e.NewValue > 1.0))
+            if (CrossSimpleAudioPlayer.Current.CurrentPosition != CrossSimpleAudioPlayer.Current.Duration && (e.NewValue - e.OldValue > 1.0 || e.OldValue - e.NewValue > 1.0))
             {
-                player.Seek(posicaoAtual);
+                CrossSimpleAudioPlayer.Current.Seek(posicaoAtual);
             }
         }
 
         private void NextSong()
         {         
             objMusica = repMusicas.GetNext(objMusica);
-
+            Configuration.musicaAtual = objMusica;
             SetProperties(objMusica);
+            CrossSimpleAudioPlayer.Current.Dispose();
+            DependencyService.Resolve<IPlayerService>().InitPlayer();
 
-            if(player.Duration != 0)
-            {
-                player.PlaybackEnded -= Player_PlaybackEnded;
-                player.Dispose();
-                player = BuildPlayer();
-            }
+            //if (player.Duration != 0)
+            //{
+            //    player = CrossSimpleAudioPlayer.Current;
+            //}
         }
 
         private void PreviousSong()
         {
             objMusica = repMusicas.GetPrevious(objMusica);
-
+            Configuration.musicaAtual = objMusica;
             SetProperties(objMusica);
+            CrossSimpleAudioPlayer.Current.Dispose();
+            DependencyService.Resolve<IPlayerService>().InitPlayer();
 
-            if (player.Duration != 0)
-            {
-                player.PlaybackEnded -= Player_PlaybackEnded;
-                player.Dispose();
-                player = BuildPlayer();
-            }
+            //if (player.Duration != 0)
+            //{
+            //    player.Dispose();
+            //    player = CrossSimpleAudioPlayer.Current;
+            //}
         }
 
         #region PLAYER METHODS
 
-        private ISimpleAudioPlayer BuildPlayer()
-        {
-            ISimpleAudioPlayer player;
-            var stream = new MemoryStream(audio);
-            DependencyService.Resolve<IPlayerService>().InitPlayer();
-            player = CrossSimpleAudioPlayer.Current;
-            player.PlaybackEnded += Player_PlaybackEnded;
-            player.Load(stream);
-            player.Play();
-            Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
-            return player;
-        }
+        //private ISimpleAudioPlayer BuildPlayer()
+        //{
+        //    ISimpleAudioPlayer player;
+        //    var stream = new MemoryStream(audio);
+        //    DependencyService.Resolve<IPlayerService>().InitPlayer();
+        //    player = CrossSimpleAudioPlayer.Current;
+        //    player.PlaybackEnded += Player_PlaybackEnded;
+        //    player.Load(stream);
+
+        //    player.Play();
+        //    Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
+        //    return player;
+        //}
 
         private bool AtualizarPlayer()
         {
-            posicaoAtual = player.CurrentPosition;
+            posicaoAtual = CrossSimpleAudioPlayer.Current.CurrentPosition;
 
-            if(duracao - posicaoAtual > 1.5)
+            if (CrossSimpleAudioPlayer.Current.Duration - CrossSimpleAudioPlayer.Current.CurrentPosition > 1.5)
                 return true;
             else
             {
                 NextSong();
                 return false;
-            } 
+            }
         }
 
-        private void Player_PlaybackEnded(object sender, EventArgs e)
-        {
-            //NextSong();
+        //private void Player_PlaybackEnded(object sender, EventArgs e)
+        //{
+        //    //NextSong();
 
-        }
+        //}
 
         #endregion
     }

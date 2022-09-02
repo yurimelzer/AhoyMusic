@@ -11,15 +11,18 @@ using System.Linq;
 using System.Text;
 using Xamarin.Forms;
 
+[assembly: Dependency(typeof(AhoyMusic.Droid.DroidPlayerService))]
 namespace AhoyMusic.Droid
 {
-    [Activity]
-    public class DroidPlayerService : Activity, IPlayerService
+
+    public class DroidPlayerService : IPlayerService
     {
         public void InitPlayer()
         {
-            var intent = new Intent(StreamingBackgroundService.ActionInitPlayer);
-            StartService(intent); // ERRO AQUI Fatal signal 11 (SIGSEGV)
+            var intent = new Intent(Android.App.Application.Context, typeof(StreamingBackgroundService));
+            intent.SetAction(StreamingBackgroundService.ActionInitPlayer);
+            Android.App.Application.Context.StopService(intent);
+            var serviceIsRunning = Android.App.Application.Context.StartService(intent);
         }
 
         public void Load()
