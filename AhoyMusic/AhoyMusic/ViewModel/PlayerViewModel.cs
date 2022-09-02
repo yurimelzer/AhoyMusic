@@ -17,21 +17,17 @@ namespace AhoyMusic.ViewModel
 
         private Musica objMusica;
 
-        private ISimpleAudioPlayer player;
-
-
-
         private byte[] _audio;
 
-        public byte[] audio
-        {
-            get => _audio;
-            set
-            {
-                _audio = value;
-                OnPropertyChanged();
-            }
-        }
+        //public byte[] audio
+        //{
+        //    get => _audio;
+        //    set
+        //    {
+        //        _audio = value;
+        //        OnPropertyChanged();
+        //    }
+        //}
 
         private byte[] _thumbnail;
 
@@ -109,15 +105,13 @@ namespace AhoyMusic.ViewModel
         {
             objMusica = musica;
             Configuration.musicaAtual = musica;
+
             repMusicas = new RepositorioDeMusicas();
+
             DependencyService.Resolve<IPlayerService>().InitPlayer();
-
-            player = CrossSimpleAudioPlayer.Current;
-
             Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
 
             SetProperties(musica);
-
 
             fecharPlayer = new Command(FecharPlayer);
             playPause = new Command(PlayAndPause);
@@ -128,7 +122,7 @@ namespace AhoyMusic.ViewModel
 
         private void SetProperties(Musica musica)
         {
-            audio = musica.Audio;
+            //audio = musica.Audio;
             thumbnail = musica.Thumbnail;
             nome = musica.Nome;
             posicaoAtual = 0;
@@ -138,7 +132,7 @@ namespace AhoyMusic.ViewModel
 
         private void FecharPlayer()
         {
-            player.Dispose();
+            CrossSimpleAudioPlayer.Current.Stop();
             App.Current.MainPage.Navigation.PopAsync(true);
         }
 
@@ -169,25 +163,27 @@ namespace AhoyMusic.ViewModel
         {         
             objMusica = repMusicas.GetNext(objMusica);
             Configuration.musicaAtual = objMusica;
-            SetProperties(objMusica);
-            CrossSimpleAudioPlayer.Current.Dispose();
-            DependencyService.Resolve<IPlayerService>().InitPlayer();
 
-            //if (player.Duration != 0)
-            //{
-            //    player = CrossSimpleAudioPlayer.Current;
-            //}
+            SetProperties(objMusica);
+
+            CrossSimpleAudioPlayer.Current.Stop();
+
+            DependencyService.Resolve<IPlayerService>().ChangeSong();
+            Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
         }
 
         private void PreviousSong()
         {
             objMusica = repMusicas.GetPrevious(objMusica);
             Configuration.musicaAtual = objMusica;
-            SetProperties(objMusica);
-            CrossSimpleAudioPlayer.Current.Dispose();
-            DependencyService.Resolve<IPlayerService>().InitPlayer();
 
             SetProperties(objMusica);
+
+            CrossSimpleAudioPlayer.Current.Stop();
+
+            DependencyService.Resolve<IPlayerService>().ChangeSong();
+            Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
+        }
 
         #region PLAYER METHODS
 
@@ -213,7 +209,6 @@ namespace AhoyMusic.ViewModel
                 return true;
             else
             {
-                NextSong();
                 return false;
             } 
         }
@@ -223,12 +218,5 @@ namespace AhoyMusic.ViewModel
             //NextSong();
         }
 
-        //private void Player_PlaybackEnded(object sender, EventArgs e)
-        //{
-        //    //NextSong();
-
-        //}
-
-        #endregion
     }
 }

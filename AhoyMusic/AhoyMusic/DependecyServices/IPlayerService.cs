@@ -8,7 +8,7 @@ namespace AhoyMusic.DependecyServices
     {
 
         void InitPlayer();
-        void Load();
+        void ChangeSong();
 
         void Play();
         void Pause();

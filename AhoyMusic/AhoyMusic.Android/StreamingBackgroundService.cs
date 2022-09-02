@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Xamarin.Forms;
+using static Android.OS.PowerManager;
 
 namespace AhoyMusic.Droid
 {
@@ -35,7 +36,10 @@ namespace AhoyMusic.Droid
                     if (CrossSimpleAudioPlayer.Current == null)
                         player = CrossSimpleAudioPlayer.CreateSimpleAudioPlayer();
                     else
+                    {
+                        CrossSimpleAudioPlayer.CreateSimpleAudioPlayer();
                         player = CrossSimpleAudioPlayer.Current;
+                    }
 
                     var musica = Configuration.musicaAtual;
                     var mStream = new MemoryStream(Configuration.musicaAtual.Audio);
@@ -43,7 +47,6 @@ namespace AhoyMusic.Droid
                     try
                     {
                         player.Load(mStream);
-
                     }
                     catch (Exception ex)
                     {
@@ -52,22 +55,38 @@ namespace AhoyMusic.Droid
 
                     player.Play();
 
-                    Device.StartTimer(TimeSpan.FromSeconds(0.5), () => {
-                        if (player.Duration - player.CurrentPosition > 1.5)
-                            return true;
-                        else
-                        {
-                            player.Dispose();
-                            var intent = new Intent(Android.App.Application.Context, typeof(StreamingBackgroundService));
-                            intent.SetAction(StreamingBackgroundService.ActionInitPlayer);
-                            Android.App.Application.Context.StartService(intent);
-                            return false;
-                        }
-                    });
+                    Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
+
+                    var pendingIntent = PendingIntent.GetActivity(ApplicationContext, 0,
+                        new Intent(ApplicationContext, typeof(MainActivity)),
+                        PendingIntentFlags.UpdateCurrent);
+                    var notification = new Notification
+                    {
+                        TickerText = new Java.Lang.String("Song Started!"),
+                        Icon = Resource.Drawable.icone_playLight
+                    };
+
+                    StartForeground(1, notification);
+
                     break;
             }
 
             return StartCommandResult.Sticky;
+        }
+
+        private bool AtualizarPlayer()
+        {
+            if (player.Duration - player.CurrentPosition > 1.5)
+                return true;
+            else
+            {
+                player.Stop();
+                var intent = new Intent(Android.App.Application.Context, typeof(StreamingBackgroundService));
+                intent.SetAction(StreamingBackgroundService.ActionInitPlayer);
+                Android.App.Application.Context.StopService(intent);
+                Android.App.Application.Context.StartForegroundService(intent);
+                return false;
+            }
         }
 
         public override IBinder OnBind(Intent intent)
