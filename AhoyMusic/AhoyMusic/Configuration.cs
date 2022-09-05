@@ -3,6 +3,7 @@ using AhoyMusic.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Xamarin.CommunityToolkit.UI.Views;
 
 namespace AhoyMusic
 {
@@ -10,6 +11,7 @@ namespace AhoyMusic
     {
         public static Musica musicaAtual { get; set; }
 
-        public static PlayerViewModel playerViewModel { get; set; }
+        public static double currentPositionPlayer { get; set; }
+
     }
 }

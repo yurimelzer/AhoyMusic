@@ -23,6 +23,21 @@ namespace AhoyMusic.Droid
             Android.App.Application.Context.StartService(intent);
         }
 
+        public void PlayPause()
+        {
+            Intent intent = new Intent(Android.App.Application.Context, typeof(PlayerBackgroundService));
+            intent.SetAction(PlayerBackgroundService.ActionPlayPause);
+            Android.App.Application.Context.StartService(intent);
+        }
+
+        public void SeekTo(double currentPosition)
+        {
+            Intent intent = new Intent(Android.App.Application.Context, typeof(PlayerBackgroundService));
+            intent.SetAction(PlayerBackgroundService.ActionSeekTo);
+            intent.PutExtra("currentPosition", currentPosition);
+            Android.App.Application.Context.StartService(intent);
+        }
+
         public void StopPlayer()
         {
             Intent intent = new Intent(Android.App.Application.Context, typeof(PlayerBackgroundService));

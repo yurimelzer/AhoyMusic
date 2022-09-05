@@ -8,6 +8,10 @@ namespace AhoyMusic.DependecyServices
     {
         void BuildPlayer();
 
+        void PlayPause();
+
+        void SeekTo(double currentPosition);
+
         void StopPlayer();
     }
 }

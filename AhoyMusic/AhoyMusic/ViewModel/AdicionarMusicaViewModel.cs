@@ -1,6 +1,8 @@
 ﻿using AhoyMusic.DependecyServices;
 using AhoyMusic.Models;
 using AhoyMusic.Repositorios;
+using Plugin.Permissions;
+using Plugin.Permissions.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +11,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
@@ -148,10 +151,12 @@ namespace AhoyMusic.ViewModel
             var streamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(objVideo.Id);
             var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
 
-            var folder = DependencyService.Get<IDirectoryService>().GetFolderPath();
-            var filePath = Path.Combine(folder, $"video.{streamInfo.Container}");
+            await Permissions.RequestAsync<Permissions.StorageWrite>();
 
-            await youtubeClient.Videos.Streams.DownloadAsync(streamInfo, folder);
+            var folder = DependencyService.Get<IDirectoryService>().GetFolderPath();
+            var filePath = Path.Combine(folder, String.Format("{0}.{1}", objVideo.Title, streamInfo.Container));
+
+            await youtubeClient.Videos.Streams.DownloadAsync(streamInfo, filePath);
 
             var stream = await youtubeClient.Videos.Streams.GetAsync(streamInfo);
             var memoryStream = new MemoryStream();
@@ -168,6 +173,7 @@ namespace AhoyMusic.ViewModel
                 Visualizacoes = objVideo.Engagement.ViewCount,
                 Likes = objVideo.Engagement.LikeCount,
                 Thumbnail = thumbnail,
+                path = filePath,
                 Audio = memoryStream.ToArray()
             };
 

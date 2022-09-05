@@ -30,6 +30,5 @@ namespace AhoyMusic.View
                 vm.fecharPlayer.Execute(vm.fecharPlayer);
             return false;
         }
-
     }
 }

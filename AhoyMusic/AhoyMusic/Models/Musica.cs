@@ -17,6 +17,7 @@ namespace AhoyMusic.Models
         public double Duracao { get; set; }
         public byte[] Thumbnail { get; set; }
         public byte[] Audio { get; set; }
+        public string path { get; set; }
 
         [ManyToMany(typeof(PlaylistMusicas))]
         public List<Playlist> playlists { get; set; }
