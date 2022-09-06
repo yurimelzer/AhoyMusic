@@ -13,5 +13,7 @@ namespace AhoyMusic.DependecyServices
         void SeekTo(double currentPosition);
 
         void StopPlayer();
+
+        void StopService();
     }
 }

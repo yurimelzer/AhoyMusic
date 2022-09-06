@@ -11,6 +11,8 @@ namespace AhoyMusic
     {
         public static Musica musicaAtual { get; set; }
 
+        public static PlayerViewModel viewModel { get; set; }
+
         public static double currentPositionPlayer { get; set; }
 
     }

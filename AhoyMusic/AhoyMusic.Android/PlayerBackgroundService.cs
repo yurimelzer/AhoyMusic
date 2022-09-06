@@ -20,7 +20,7 @@ using Xamarin.Forms;
 namespace AhoyMusic.Droid
 {
     [Service(Exported = true)]
-    [IntentFilter(new[] { ActionBuildPlayer, ActionPlayPause, ActionSeekTo })]
+    [IntentFilter(new[] { ActionBuildPlayer, ActionPlayPause, ActionSeekTo, ActionStopPlayer })]
     public class PlayerBackgroundService : Service
     {
         MediaPlayer player;
@@ -28,6 +28,7 @@ namespace AhoyMusic.Droid
         public const string ActionBuildPlayer = "com.xamarin.action.BUILDPLAYER";
         public const string ActionPlayPause = "com.xamarin.action.PLAYPAUSE";
         public const string ActionSeekTo = "com.xamarin.action.SEEKTO";
+        public const string ActionStopPlayer = "com.xamarin.action.STOPPLAYER";
 
         [return: GeneratedEnum]
         public override StartCommandResult OnStartCommand(Intent intent, [GeneratedEnum] StartCommandFlags flags, int startId)
@@ -42,6 +43,8 @@ namespace AhoyMusic.Droid
                     double currentPosition = intent.GetDoubleExtra("currentPosition", 0);
                     SeekTo(currentPosition);
                     break;
+                case ActionStopPlayer: player.Stop();
+                    break;
             }
 
             return StartCommandResult.Sticky;
@@ -55,21 +58,24 @@ namespace AhoyMusic.Droid
 
             player.Prepared += (sender, args) => player.Start();
 
-            player.Completion += (sender, args) => player.Stop();
+            player.Completion += (sender, args) => Configuration.viewModel.NextSong();
 
             player.Error += (sender, args) => player.Stop();
 
             player.SetDataSource(Configuration.musicaAtual.path);
 
             player.Prepare();
-            Device.StartTimer(TimeSpan.FromSeconds(0.5), () => {
-                if (player.Duration - player.CurrentPosition > 1500)
+            Device.StartTimer(TimeSpan.FromSeconds(0.8), () => {
+
+                Configuration.viewModel.posicaoAtual = player.CurrentPosition / 1000;
+
+                if (player.Duration - player.CurrentPosition > 1500 && player.IsPlaying)
                 {
-                    Configuration.currentPositionPlayer = player.CurrentPosition;
                     return true;
                 }
                 else
                 {
+                    var a = Configuration.viewModel.posicaoAtual;
                     return false;
                 }
             });
@@ -96,9 +102,9 @@ namespace AhoyMusic.Droid
             player.Start();
         }
 
+
         public override void OnDestroy()
         {
-            player.Dispose();
             base.OnDestroy();
         }
 

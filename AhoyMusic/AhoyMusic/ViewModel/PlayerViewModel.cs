@@ -93,12 +93,15 @@ namespace AhoyMusic.ViewModel
         public PlayerViewModel(Musica musica)
         {
             objMusica = musica;
+
             Configuration.musicaAtual = musica;
+
+            Configuration.viewModel = this;
 
             repMusicas = new RepositorioDeMusicas();
 
             DependencyService.Resolve<IPlayerService>().BuildPlayer();
-            Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
+            //Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
 
             SetProperties(musica);
 
@@ -135,7 +138,7 @@ namespace AhoyMusic.ViewModel
             DependencyService.Resolve<IPlayerService>().SeekTo(posicaoAtual);
         }
 
-        private void NextSong()
+        public void NextSong()
         {
             objMusica = repMusicas.GetNext(objMusica);
             Configuration.musicaAtual = objMusica;
@@ -143,7 +146,7 @@ namespace AhoyMusic.ViewModel
             DependencyService.Resolve<IPlayerService>().StopPlayer();
 
             DependencyService.Resolve<IPlayerService>().BuildPlayer();
-            Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
+            //Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
 
             SetProperties(objMusica);
         }
@@ -156,21 +159,21 @@ namespace AhoyMusic.ViewModel
             DependencyService.Resolve<IPlayerService>().StopPlayer();
 
             DependencyService.Resolve<IPlayerService>().BuildPlayer();
-            Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
+            //Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
 
             SetProperties(objMusica);
         }
 
-        private bool AtualizarPlayer()
-        {
-            posicaoAtual = Configuration.currentPositionPlayer / 1000;
+        //private bool AtualizarPlayer()
+        //{
+        //    posicaoAtual = Configuration.currentPositionPlayer / 1000;
 
-            if (duracao - posicaoAtual > 1.5)
-                return true;
-            else
-            {
-                return false;
-            }
-        }
+        //    if (duracao - posicaoAtual > 1.5)
+        //        return true;
+        //    else
+        //    {
+        //        return false;
+        //    }
+        //}
     }
 }

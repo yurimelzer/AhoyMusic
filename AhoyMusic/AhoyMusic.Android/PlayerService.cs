@@ -41,7 +41,14 @@ namespace AhoyMusic.Droid
         public void StopPlayer()
         {
             Intent intent = new Intent(Android.App.Application.Context, typeof(PlayerBackgroundService));
-            Android.App.Application.Context.StopService(intent);
+            intent.SetAction(PlayerBackgroundService.ActionStopPlayer);
+            Android.App.Application.Context.StartService(intent);
+        }
+
+        public void StopService()
+        {
+            Intent intent = new Intent(Android.App.Application.Context, typeof(PlayerBackgroundService));
+            bool returned = Android.App.Application.Context.StopService(intent);
         }
     }
 }
