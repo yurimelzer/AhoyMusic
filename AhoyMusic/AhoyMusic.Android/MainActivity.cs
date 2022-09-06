@@ -7,6 +7,7 @@ using Android.OS;
 using static Android.OS.PowerManager;
 using Xamarin.Forms;
 using Android;
+using Xamarin.Essentials;
 
 namespace AhoyMusic.Droid
 {
@@ -25,10 +26,11 @@ namespace AhoyMusic.Droid
 
             if (!(CheckSelfPermission(Manifest.Permission.ManageExternalStorage) == Permission.Denied))
             {
-                RequestPermissions(new string[] { Manifest.Permission.ManageExternalStorage, Manifest.Permission.ReadExternalStorage, Manifest.Permission.WriteExternalStorage }, 1);
+                RequestPermissions(new string[] { Manifest.Permission.ManageExternalStorage, Manifest.Permission.ReadExternalStorage, Manifest.Permission.WriteExternalStorage, Manifest.Permission.AccessNotificationPolicy,
+                Manifest.Permission.BindNotificationListenerService}, 1);
             }
-
         }
+
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);

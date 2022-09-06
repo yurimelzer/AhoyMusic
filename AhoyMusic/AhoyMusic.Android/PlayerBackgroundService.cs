@@ -7,6 +7,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.App;
 using Plugin.SimpleAudioPlayer;
 using System;
 using System.Collections.Generic;
@@ -21,28 +22,33 @@ namespace AhoyMusic.Droid
 {
     [Service(Exported = true)]
     [IntentFilter(new[] { ActionBuildPlayer, ActionPlayPause, ActionSeekTo, ActionStopPlayer })]
-    public class PlayerBackgroundService : Service
+    public class PlayerBackgroundService : Service, AudioManager.IOnAudioFocusChangeListener
     {
         MediaPlayer player;
 
-        public const string ActionBuildPlayer = "com.xamarin.action.BUILDPLAYER";
-        public const string ActionPlayPause = "com.xamarin.action.PLAYPAUSE";
-        public const string ActionSeekTo = "com.xamarin.action.SEEKTO";
-        public const string ActionStopPlayer = "com.xamarin.action.STOPPLAYER";
+        public const string ActionBuildPlayer = "com.ahoymusic.action.BUILDPLAYER";
+        public const string ActionPlayPause = "com.ahoymusic.action.PLAYPAUSE";
+        public const string ActionSeekTo = "com.ahoymusc.action.SEEKTO";
+        public const string ActionStopPlayer = "com.ahoymusic.action.STOPPLAYER";
 
         [return: GeneratedEnum]
         public override StartCommandResult OnStartCommand(Intent intent, [GeneratedEnum] StartCommandFlags flags, int startId)
         {
+
             switch (intent.Action)
             {
                 case ActionBuildPlayer: BuildPlayer();
                     break;
+
                 case ActionPlayPause: PlayPause();
                     break;
+
                 case ActionSeekTo:
                     double currentPosition = intent.GetDoubleExtra("currentPosition", 0);
                     SeekTo(currentPosition);
+
                     break;
+
                 case ActionStopPlayer: player.Stop();
                     break;
             }
@@ -52,6 +58,9 @@ namespace AhoyMusic.Droid
 
         private void BuildPlayer()
         {
+            if (player != null)
+                player.Stop();
+
             player = new MediaPlayer();
 
             //player.SetAudioStreamType(Android.Media.Stream.Music);
@@ -81,6 +90,32 @@ namespace AhoyMusic.Droid
             });
 
             player.SetWakeMode(ApplicationContext, WakeLockFlags.Partial);
+
+            RegisterForegroundService();
+        }
+
+        private void RegisterForegroundService()
+        {
+            string NOTIFICATION_CHANNEL_ID = "com.ahoymusic.id";
+
+            NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Ahoy Music", Android.App.NotificationImportance.High);
+
+            NotificationManager manager = (NotificationManager)GetSystemService(Context.NotificationService);
+
+            manager.CreateNotificationChannel(chan);
+
+            var pendingIntent = PendingIntent.GetActivity(ApplicationContext, 0, new Intent(ApplicationContext, typeof(MainActivity)), PendingIntentFlags.CancelCurrent);
+
+            var notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                .SetContentTitle("Ahoy Music")
+                .SetContentText(Configuration.musicaAtual.Nome)
+                .SetSmallIcon(Resource.Drawable.icone_playLight)
+                .SetContentIntent(pendingIntent)
+                .SetOngoing(true)
+                .Build();
+
+            const int Service_Running_Notification_ID = 936;
+            StartForeground(Service_Running_Notification_ID, notification);
         }
 
         private void PlayPause()
@@ -88,6 +123,7 @@ namespace AhoyMusic.Droid
             if (player.IsPlaying)
             {
                 player.Pause();
+                StopForeground(true);
             }
             else
             {
@@ -102,15 +138,43 @@ namespace AhoyMusic.Droid
             player.Start();
         }
 
-
-        public override void OnDestroy()
-        {
-            base.OnDestroy();
-        }
-
         public override IBinder OnBind(Intent intent)
         {
             throw new NotImplementedException();
+        }
+
+        public void OnAudioFocusChange([GeneratedEnum] AudioFocus focusChange)
+        {
+            switch (focusChange)
+            {
+                case AudioFocus.Gain:
+                    if (player == null)
+                        BuildPlayer();
+
+                    if (!player.IsPlaying)
+                        player.Start();
+
+                    player.SetVolume(1.0f, 1.0f);
+
+                    break;
+
+                case AudioFocus.Loss:
+                    player.Stop();
+
+                    break;
+
+                case AudioFocus.LossTransient:
+                    player.Pause();
+
+                    break;
+
+                case AudioFocus.LossTransientCanDuck:
+
+                    if (player.IsPlaying)
+                        player.SetVolume(.1f, .1f);
+
+                    break;
+            }
         }
     }
 }
