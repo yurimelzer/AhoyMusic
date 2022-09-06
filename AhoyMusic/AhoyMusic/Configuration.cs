@@ -13,7 +13,8 @@ namespace AhoyMusic
 
         public static PlayerViewModel viewModel { get; set; }
 
-        public static double currentPositionPlayer { get; set; }
+        public static bool currentPlayerIsPlaying { get; set; } = false;
+
 
     }
 }

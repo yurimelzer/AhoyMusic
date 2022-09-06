@@ -69,6 +69,7 @@
     <Compile Include="DatabaseConnection.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="PlayerService.cs" />
+    <Compile Include="RemoteControlBroadcastReceiver.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -131,6 +131,10 @@ namespace AhoyMusic.ViewModel
         private void PlayAndPause()
         {
             DependencyService.Resolve<IPlayerService>().PlayPause();
+            if (Configuration.currentPlayerIsPlaying)
+                btnPlayPauseStyle = App.Current.Resources["pauseButton"] as Style;
+            else
+                btnPlayPauseStyle = App.Current.Resources["playButton"] as Style;
         }
 
         private void SeekPlayer(object args)

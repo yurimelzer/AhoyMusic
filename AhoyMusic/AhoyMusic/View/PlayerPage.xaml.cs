@@ -23,6 +23,13 @@ namespace AhoyMusic.View
             InitializeComponent();
         }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            var viewModel = this.BindingContext as PlayerViewModel;
+            viewModel.SetProperties(Configuration.musicaAtual);
+        }
+
         protected override bool OnBackButtonPressed()
         {
             var vm = (PlayerViewModel)BindingContext;
