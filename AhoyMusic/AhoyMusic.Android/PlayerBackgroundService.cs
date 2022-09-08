@@ -32,9 +32,9 @@ namespace AhoyMusic.Droid
     {
         private MediaPlayer player;
         private bool IsStopped;
+
         private ComponentName remoteComponentName;
         private MediaSessionCompat mediaSession;
-        public MediaControllerCompat mediaControllerCompat;
 
         IBinder binder;
 
