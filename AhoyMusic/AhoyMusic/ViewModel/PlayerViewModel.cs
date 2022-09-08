@@ -14,12 +14,8 @@ namespace AhoyMusic.ViewModel
 {
     public class PlayerViewModel : BindableObject
     {
-        readonly RepositorioDeMusicas repMusicas;
-
-        private Musica objMusica;
 
         private byte[] _thumbnail;
-
         public byte[] thumbnail
         {
             get => _thumbnail;
@@ -31,7 +27,6 @@ namespace AhoyMusic.ViewModel
         }
 
         private string _nome;
-
         public string nome
         {
             get => _nome;
@@ -43,7 +38,6 @@ namespace AhoyMusic.ViewModel
         }
 
         private double _posicaoAtual;
-
         public double posicaoAtual
         {
             get => _posicaoAtual;
@@ -55,7 +49,6 @@ namespace AhoyMusic.ViewModel
         }
 
         private double _duracao;
-
         public double duracao
         {
             get => _duracao;
@@ -66,22 +59,22 @@ namespace AhoyMusic.ViewModel
             }
         }
 
-        private Style _btnPlayPauseStyle;
-
-        public Style btnPlayPauseStyle
+        private bool _playerIsPlaying;
+        public bool playerIsPlaying
         {
-            get => _btnPlayPauseStyle;
+            get => _playerIsPlaying;
             set
             {
-                _btnPlayPauseStyle = value;
+                _playerIsPlaying = value;
                 OnPropertyChanged();
             }
         }
 
-
         public ICommand fecharPlayer { get; private set; }
 
-        public ICommand playPause { get; private set; }
+        public ICommand play { get; private set; }    
+        
+        public ICommand pause { get; private set; }
 
         public ICommand seekPlayer { get; private set; }
 
@@ -89,38 +82,23 @@ namespace AhoyMusic.ViewModel
 
         public ICommand previousSong { get; private set; }
 
-
         public PlayerViewModel(Musica musica)
         {
-            objMusica = musica;
-
             Configuration.musicaAtual = musica;
-
             Configuration.viewModel = this;
 
-            repMusicas = new RepositorioDeMusicas();
-
             DependencyService.Resolve<IPlayerService>().BuildPlayer();
-            //Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
 
             SetProperties(musica);
 
             fecharPlayer = new Command(FecharPlayer);
-            playPause = new Command(PlayAndPause);
+            play = new Command(Play);
+            pause = new Command(Pause);
             seekPlayer = new Command(SeekPlayer);
             nextSong = new Command(NextSong);
             previousSong = new Command(PreviousSong);
         }
 
-        public void SetProperties(Musica musica)
-        {
-            //audio = musica.Audio;
-            thumbnail = musica.Thumbnail;
-            nome = musica.Nome;
-            posicaoAtual = 0;
-            duracao = musica.Duracao;
-            btnPlayPauseStyle = App.Current.Resources["pauseButton"] as Style;
-        }
 
         private void FecharPlayer()
         {
@@ -128,13 +106,14 @@ namespace AhoyMusic.ViewModel
             App.Current.MainPage.Navigation.PopAsync(true);
         }
 
-        private void PlayAndPause()
+        private void Play()
         {
-            DependencyService.Resolve<IPlayerService>().PlayPause();
-            if (Configuration.currentPlayerIsPlaying)
-                btnPlayPauseStyle = App.Current.Resources["pauseButton"] as Style;
-            else
-                btnPlayPauseStyle = App.Current.Resources["playButton"] as Style;
+            DependencyService.Resolve<IPlayerService>().Play();
+        }
+
+        private void Pause()
+        {
+            DependencyService.Resolve<IPlayerService>().Pause();
         }
 
         private void SeekPlayer(object args)
@@ -144,40 +123,21 @@ namespace AhoyMusic.ViewModel
 
         public void NextSong()
         {
-            objMusica = repMusicas.GetNext(objMusica);
-            Configuration.musicaAtual = objMusica;
-
-            DependencyService.Resolve<IPlayerService>().StopPlayer();
-
-            DependencyService.Resolve<IPlayerService>().BuildPlayer();
-            //Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
-
-            SetProperties(objMusica);
+            DependencyService.Resolve<IPlayerService>().PlayNext();
         }
 
         private void PreviousSong()
         {
-            objMusica = repMusicas.GetPrevious(objMusica);
-            Configuration.musicaAtual = objMusica;
-
-            DependencyService.Resolve<IPlayerService>().StopPlayer();
-
-            DependencyService.Resolve<IPlayerService>().BuildPlayer();
-            //Device.StartTimer(TimeSpan.FromSeconds(0.5), () => AtualizarPlayer());
-
-            SetProperties(objMusica);
+            DependencyService.Resolve<IPlayerService>().PlayPrevious();
         }
 
-        //private bool AtualizarPlayer()
-        //{
-        //    posicaoAtual = Configuration.currentPositionPlayer / 1000;
-
-        //    if (duracao - posicaoAtual > 1.5)
-        //        return true;
-        //    else
-        //    {
-        //        return false;
-        //    }
-        //}
+        public void SetProperties(Musica musica)
+        {
+            thumbnail = musica.Thumbnail;
+            nome = musica.Nome;
+            posicaoAtual = 0;
+            duracao = musica.Duracao;
+            playerIsPlaying = true;
+        }
     }
 }

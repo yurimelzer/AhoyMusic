@@ -32,7 +32,10 @@ namespace AhoyMusic.Droid
             switch (key.KeyCode)
             {
                 case Keycode.Headsethook:
-                case Keycode.MediaPlayPause: action = PlayerBackgroundService.ActionPlayPause; break;
+                case Keycode.MediaPlay: action = PlayerBackgroundService.ActionPlay; break;
+                case Keycode.MediaPause: action = PlayerBackgroundService.ActionPause; break;
+                case Keycode.MediaNext: action = PlayerBackgroundService.ActionPlayNext; break;
+                case Keycode.MediaPrevious: action = PlayerBackgroundService.ActionPlayPrevious; break;
                 case Keycode.MediaStop: action = PlayerBackgroundService.ActionStopPlayer; break;
                     default: return;
             }

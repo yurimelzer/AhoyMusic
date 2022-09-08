@@ -6,10 +6,12 @@ using Android.Graphics;
 using Android.Media;
 using Android.OS;
 using Android.Runtime;
+using Android.Support.V4.Media;
 using Android.Support.V4.Media.Session;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.App;
+using Java.Net;
 using Plugin.SimpleAudioPlayer;
 using System;
 using System.Collections.Generic;
@@ -25,40 +27,41 @@ using Binder = Android.OS.Binder;
 namespace AhoyMusic.Droid
 {
     [Service(Exported = true)]
-    [IntentFilter(new[] { ActionBuildPlayer, ActionPlayPause, ActionSeekTo, ActionStopPlayer })]
+    [IntentFilter(new[] { ActionBuildPlayer, ActionPlay, ActionPause, ActionPlayNext, ActionPlayPrevious, ActionSeekTo, ActionStopPlayer })]
     public class PlayerBackgroundService : Service, AudioManager.IOnAudioFocusChangeListener
     {
         private MediaPlayer player;
+        private bool IsStopped;
         private ComponentName remoteComponentName;
         private MediaSessionCompat mediaSession;
+        public MediaControllerCompat mediaControllerCompat;
 
         IBinder binder;
 
         public const string ActionBuildPlayer = "com.ahoymusic.action.BUILDPLAYER";
-        public const string ActionPlayPause = "com.ahoymusic.action.PLAYPAUSE";
+        public const string ActionPlay = "com.ahoymusic.action.PLAY";
+        public const string ActionPause = "com.ahoymusic.action.PAUSE";
+        public const string ActionPlayNext = "com.ahoymusic.action.PLAYNEXT";
+        public const string ActionPlayPrevious = "com.ahoymusic.action.PLAYPREVIOUS";
         public const string ActionSeekTo = "com.ahoymusc.action.SEEKTO";
         public const string ActionStopPlayer = "com.ahoymusic.action.STOPPLAYER";
 
         [return: GeneratedEnum]
         public override StartCommandResult OnStartCommand(Intent intent, [GeneratedEnum] StartCommandFlags flags, int startId)
         {
+            binder = new MediaPlayerServiceBinder(this);
+
+            double currentPosition = intent.GetDoubleExtra("currentPosition", 0);
 
             switch (intent.Action)
             {
-                case ActionBuildPlayer: BuildPlayer();
-                    break;
-
-                case ActionPlayPause: PlayPause();
-                    break;
-
-                case ActionSeekTo:
-                    double currentPosition = intent.GetDoubleExtra("currentPosition", 0);
-                    SeekTo(currentPosition);
-
-                    break;
-
-                case ActionStopPlayer: player.Stop();
-                    break;
+                case ActionBuildPlayer: BuildPlayer(); break;
+                case ActionPlay: Play(); break;
+                case ActionPause: Pause(); break;
+                case ActionPlayNext: PlayNext(); break;
+                case ActionPlayPrevious: PlayPrevious(); break;
+                case ActionSeekTo: SeekTo(currentPosition); break;
+                case ActionStopPlayer: Stop(); break;
             }
 
             return StartCommandResult.Sticky;
@@ -71,38 +74,27 @@ namespace AhoyMusic.Droid
 
             player = new MediaPlayer();
 
-            //player.SetAudioStreamType(Android.Media.Stream.Music);
-
             player.Prepared += (sender, args) => {
                 //if (remoteControlClient != null)
                 //    remoteControlClient.SetPlaybackState(RemoteControlPlayState.Playing);
-                //UpdateMetadata();
-                player.Start();
+                UpdateMetadata();
+                Play();
+                IsStopped = false;
             };
 
-            player.Completion += (sender, args) => Configuration.viewModel.NextSong();
+            player.Completion += (sender, args) => PlayNext();
 
-            player.Error += (sender, args) => player.Stop();
+            player.Error += (sender, args) => Stop();
 
             player.SetDataSource(Configuration.musicaAtual.path);
 
             player.Prepare();
-            Device.StartTimer(TimeSpan.FromSeconds(0.8), () => {
-
-                Configuration.viewModel.posicaoAtual = player.CurrentPosition / 1000;
-
-                if (player.Duration - player.CurrentPosition > 1500 || player.IsPlaying)
-                {
-                    return true;
-                }
-                else
-                {
-                    var a = Configuration.viewModel.posicaoAtual;
-                    return false;
-                }
-            });
+            Device.StartTimer(TimeSpan.FromSeconds(0.8), () => TimerPlayer());
 
             player.SetWakeMode(ApplicationContext, WakeLockFlags.Partial);
+
+            RegisterMediaSession();
+            UpdateMetadata();
 
             //RegisterRemoteClient();
             //remoteControlClient.SetPlaybackState(RemoteControlPlayState.Buffering);
@@ -112,22 +104,77 @@ namespace AhoyMusic.Droid
             RegisterForegroundService();
         }
 
-
-        private void PlayPause()
+        private bool TimerPlayer()
         {
-            if (player.IsPlaying)
-                player.Pause();
-            else
-                player.Start();
+            Configuration.viewModel.posicaoAtual = player.CurrentPosition / 1000;
 
-            Configuration.currentPlayerIsPlaying = !player.IsPlaying;
+            if (player.Duration - player.CurrentPosition < 1500 || IsStopped)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
 
-        private void SeekTo(double currentPosition)
+        public void Play()
+        {
+            player.Start();
+            UpdatePlaybackState(PlaybackStateCompat.StatePlaying);
+            Configuration.viewModel.playerIsPlaying = player.IsPlaying;
+        }
+
+        public void Pause()
+        {
+            player.Pause();
+            UpdatePlaybackState(PlaybackStateCompat.StatePaused);
+            Configuration.viewModel.playerIsPlaying = player.IsPlaying;
+        }
+
+        public void PlayNext()
+        {
+            RepositorioDeMusicas repositorio = new RepositorioDeMusicas();
+            Configuration.musicaAtual = repositorio.GetNext(Configuration.musicaAtual);
+
+            Stop();
+
+            UpdatePlaybackState(PlaybackStateCompat.StateSkippingToNext);
+            BuildPlayer();
+
+            Configuration.viewModel.SetProperties(Configuration.musicaAtual);
+        }
+
+        public void PlayPrevious()
+        {
+            RepositorioDeMusicas repositorio = new RepositorioDeMusicas();
+            Configuration.musicaAtual = repositorio.GetPrevious(Configuration.musicaAtual);
+
+            Stop();
+            UpdatePlaybackState(PlaybackStateCompat.StateSkippingToPrevious);
+            BuildPlayer();
+
+            Configuration.viewModel.SetProperties(Configuration.musicaAtual);
+        }
+
+        public void SeekTo(double currentPosition)
         {
             player.Pause();
             player.SeekTo((int)(currentPosition * 1000), MediaPlayerSeekMode.ClosestSync);
             player.Start();
+        }
+
+        public void Stop()
+        {
+            player.Stop();
+            IsStopped = true;
+        }
+
+        public override void OnDestroy()
+        {
+            Stop();
+            StopForeground(true);
+            base.OnDestroy();
         }
 
         public override IBinder OnBind(Intent intent)
@@ -170,6 +217,39 @@ namespace AhoyMusic.Droid
             }
         }
 
+        private void UpdatePlaybackState(int state)
+        {
+            if (mediaSession == null || player == null)
+                return;
+
+            try
+            {
+                PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
+                    .SetActions(
+                        PlaybackStateCompat.ActionPlay |
+                        PlaybackStateCompat.ActionPause |
+                        PlaybackStateCompat.ActionSkipToNext |
+                        PlaybackStateCompat.ActionSkipToNext |
+                        PlaybackStateCompat.ActionSkipToPrevious |
+                        PlaybackStateCompat.ActionStop)
+                    .SetState(state, player.CurrentPosition, 1.0f, SystemClock.ElapsedRealtime());
+
+                mediaSession.SetPlaybackState(stateBuilder.Build());
+
+
+
+                if (state == PlaybackStateCompat.StatePlaying || state == PlaybackStateCompat.StatePaused)
+                {
+                    RegisterForegroundService();
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+        }
+
         private void RegisterForegroundService()
         {
             string NOTIFICATION_CHANNEL_ID = "com.ahoymusic.id";
@@ -188,6 +268,7 @@ namespace AhoyMusic.Droid
                 .SetSmallIcon(Resource.Drawable.icone_playLight)
                 .SetContentIntent(pendingIntent)
                 .SetOngoing(true)
+                .SetSilent(true)
                 .Build();
 
             const int Service_Running_Notification_ID = 936;
@@ -221,6 +302,23 @@ namespace AhoyMusic.Droid
             {
                 Console.WriteLine(ex);
             }
+        }
+
+        private void UpdateMetadata()
+        {
+            if (mediaSession == null)
+                return;
+
+            MemoryStream ms = new MemoryStream(Configuration.musicaAtual.Thumbnail);
+            Bitmap capa = BitmapFactory.DecodeStream(ms);
+
+            MediaMetadataCompat.Builder builder = new MediaMetadataCompat.Builder();
+
+            builder.PutString(MediaMetadata.MetadataKeyArtist, Configuration.musicaAtual.Autor)
+                .PutString(MediaMetadata.MetadataKeyTitle, Configuration.musicaAtual.Nome)
+                .PutBitmap(MediaMetadata.MetadataKeyAlbumArt, capa);
+
+            mediaSession.SetMetadata(builder.Build());
         }
     }
 
