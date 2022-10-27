@@ -11,7 +11,7 @@
     
     <ContentPage.Content>
         
-        <StackLayout Padding="5,20,5,10">
+        <AbsoluteLayout Padding="5,20,5,10">
             
             <ScrollView>
  
@@ -76,18 +76,18 @@
                 </ListView>
 
             </ScrollView>
-            <AbsoluteLayout 
+            <!--<AbsoluteLayout 
                 VerticalOptions="EndAndExpand" HorizontalOptions="EndAndExpand" 
-                Padding="20">
+                Padding="20">-->
 
                 <Button 
                     Font="40" Padding="0,0,0,5" Text="+" TextColor="#37474f" FontAttributes="Bold"
-                    Style="{StaticResource roundAccentButton}" WidthRequest="70" HeightRequest="70"
+                    Style="{StaticResource roundAccentButton}" AbsoluteLayout.LayoutBounds="270,640,70,70"
                     Command="{Binding addMusic}"/>
 
-            </AbsoluteLayout>
+            <!--</AbsoluteLayout>-->
             
-        </StackLayout>
+        </AbsoluteLayout>
         
     </ContentPage.Content>
     

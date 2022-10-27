@@ -1,6 +1,7 @@
 ﻿using AhoyMusic.DependecyServices;
 using AhoyMusic.Models;
 using AhoyMusic.Repositorios;
+using Android.App;
 using Plugin.SimpleAudioPlayer;
 using System;
 using System.Collections.Generic;
@@ -87,7 +88,14 @@ namespace AhoyMusic.ViewModel
             Configuration.musicaAtual = musica;
             Configuration.viewModel = this;
 
-            DependencyService.Resolve<IPlayerService>().BuildPlayer();
+            try
+            {
+                DependencyService.Resolve<IPlayerService>().BuildPlayer();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
 
             SetProperties(musica);
 

@@ -30,7 +30,7 @@ namespace AhoyMusic.Droid
     [IntentFilter(new[] { ActionBuildPlayer, ActionPlay, ActionPause, ActionPlayNext, ActionPlayPrevious, ActionSeekTo, ActionStopPlayer })]
     public class PlayerBackgroundService : Service, AudioManager.IOnAudioFocusChangeListener
     {
-        private MediaPlayer player;
+        private static MediaPlayer player;
         private bool IsStopped;
 
         private ComponentName remoteComponentName;
@@ -65,6 +65,18 @@ namespace AhoyMusic.Droid
             }
 
             return StartCommandResult.Sticky;
+        }
+
+        //public override void OnDestroy()
+        //{
+        //    Stop();
+        //    base.OnDestroy();
+        //}
+
+        public override IBinder OnBind(Intent intent)
+        {
+            binder = new MediaPlayerServiceBinder(this);
+            return binder;
         }
 
         private void BuildPlayer()
@@ -102,20 +114,6 @@ namespace AhoyMusic.Droid
 
 
             RegisterForegroundService();
-        }
-
-        private bool TimerPlayer()
-        {
-            Configuration.viewModel.posicaoAtual = player.CurrentPosition / 1000;
-
-            if (player.Duration - player.CurrentPosition < 1500 || IsStopped)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
         }
 
         public void Play()
@@ -168,19 +166,21 @@ namespace AhoyMusic.Droid
         {
             player.Stop();
             IsStopped = true;
-        }
-
-        public override void OnDestroy()
-        {
-            Stop();
             StopForeground(true);
-            base.OnDestroy();
         }
 
-        public override IBinder OnBind(Intent intent)
+        private bool TimerPlayer()
         {
-            binder = new MediaPlayerServiceBinder(this);
-            return binder;
+            Configuration.viewModel.posicaoAtual = player.CurrentPosition / 1000;
+
+            if (player.Duration - player.CurrentPosition < 1500 || IsStopped)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         public void OnAudioFocusChange([GeneratedEnum] AudioFocus focusChange)
@@ -192,22 +192,14 @@ namespace AhoyMusic.Droid
                         BuildPlayer();
 
                     if (!player.IsPlaying)
-                        player.Start();
+                        Play();
 
                     player.SetVolume(1.0f, 1.0f);
 
                     break;
 
-                case AudioFocus.Loss:
-                    player.Stop();
-
-                    break;
-
-                case AudioFocus.LossTransient:
-                    player.Pause();
-
-                    break;
-
+                case AudioFocus.Loss: Stop(); break;
+                case AudioFocus.LossTransient: Pause(); break;
                 case AudioFocus.LossTransientCanDuck:
 
                     if (player.IsPlaying)
